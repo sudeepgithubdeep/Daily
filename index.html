@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Daily 5: a two-minute English word quiz with streaks, points and badges.">
+<meta name="theme-color" content="#1f7a4d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%93%9D%3C/text%3E%3C/svg%3E">
+<title>Daily 5</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f7f2;--card:#fff;--ink:#17231c;--mute:#566659;--line:#dfe5da;--acc:#1f7a4d;--ai:#fff;--okbg:#dff3e7;--bad:#b3261e;--badbg:#fbe3e1;--gold:#f2a900;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1713;--card:#18231d;--ink:#eaf2ec;--mute:#9db0a4;--line:#2a3a31;--acc:#4cc27f;--ai:#07140c;--okbg:#14301f;--bad:#ff8a80;--badbg:#3a1a18}}
+:root[data-theme="dark"]{--bg:#0f1713;--card:#18231d;--ink:#eaf2ec;--mute:#9db0a4;--line:#2a3a31;--acc:#4cc27f;--ai:#07140c;--okbg:#14301f;--bad:#ff8a80;--badbg:#3a1a18}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+header,main{max-width:480px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.brand{font-weight:800;font-size:1.25rem}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-weight:700;font-size:.95rem;margin-left:6px}
+main{padding:4px 16px 100px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+.c{text-align:center}
+h2{margin:.2em 0}
+p{margin:.5em 0}
+.mute{color:var(--mute)}.small{font-size:.9rem}
+.btn{display:block;width:100%;min-height:56px;margin-top:14px;border:2px solid var(--acc);border-radius:14px;background:var(--acc);color:var(--ai);font:inherit;font-weight:700;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line);min-height:48px}
+.emo{font-size:64px;line-height:1.2;text-align:center}
+.sent{font-size:1.35rem;text-align:center;font-weight:600;margin:.4em 0 1em}
+.blank{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--acc)}
+.fill{color:var(--acc)}
+.opt{display:block;width:100%;min-height:58px;margin-top:10px;padding:10px 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;font-size:1.1rem;text-align:left;cursor:pointer}
+.opt.ok{background:var(--okbg);border-color:var(--acc)}
+.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.opt.dim{opacity:.55}
+.prog{display:flex;gap:6px;margin-bottom:14px}
+.prog i{flex:1;height:8px;border-radius:5px;background:var(--line)}
+.prog i.on{background:var(--acc)}.prog i.x{background:var(--bad)}.prog i.cur{background:var(--gold)}
+.fb{margin-top:14px;font-weight:700}
+.pts{font-size:1.5rem;font-weight:800;color:var(--acc)}
+.bar{height:12px;background:var(--line);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold)}
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.bd{border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;font-size:.9rem}
+.bd.lock{opacity:.5}.bd .e{font-size:34px}
+.week{display:flex;justify-content:space-between;margin-top:10px}
+.wd{text-align:center;font-size:.8rem;color:var(--mute)}
+.wd i{display:block;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);line-height:30px;font-style:normal;margin-bottom:2px}
+.wd i.d{background:var(--acc);border-color:var(--acc);color:var(--ai)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;min-height:60px;background:none;border:0;font:inherit;font-weight:700;color:var(--mute);cursor:pointer}
+nav button[aria-current=page]{color:var(--acc)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:.9rem;display:none}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<header><div class="brand">Daily 5</div><div><span class="chip" id="cs"></span><span class="chip" id="cl"></span></div></header>
+<main id="app"></main>
+<nav><button data-t="t" onclick="go('t')">📝 Today</button><button data-t="r" onclick="go('r')">🏆 Rewards</button></nav>
+<div id="toast" role="status"></div>
+<script>
+// [emoji, sentence, right word, wrong, wrong]
+const Q=[
+["☔","It is raining. Take an ___.","umbrella","apple","ocean"],
+["🚌","I go to work by ___.","bus","sky","soup"],
+["💧","Please give me a glass of ___.","water","road","book"],
+["📱","My phone battery is ___. I must charge it.","low","tall","angry"],
+["🕗","The shop opens ___ eight o'clock.","at","on","of"],
+["🧑‍🍳","She ___ dinner every night.","cooks","cook","cooking"],
+["👟","He ___ to school yesterday.","walked","walk","walking"],
+["💰","I ___ some money every month.","save","sleep","sing"],
+["🏥","I feel sick. I must see a ___.","doctor","driver","farmer"],
+["🛒","The market is ___ my house.","near","many","soon"],
+["📅","Today is Monday. Tomorrow is ___.","Tuesday","Sunday","Friday"],
+["🌙","The moon comes out at ___.","night","noon","morning"],
+["🐄","A cow gives us ___.","milk","paper","shoes"],
+["🔑","I lost my ___. I cannot open the door.","key","cake","tree"],
+["⏰","Hurry! You are ___ for work.","late","tall","cold"],
+["👵","My mother's mother is my ___.","grandmother","sister","teacher"],
+["🍚","We eat rice ___ a spoon.","with","of","at"],
+["📖","She ___ a book now.","is reading","are reading","am reading"],
+["🧒","There ___ three children in the park.","are","is","am"],
+["🔥","Be careful! The tea is very ___.","hot","sad","blue"],
+["🏦","I keep my money in the ___.","bank","moon","shirt"],
+["🧾","Please pay at the ___.","counter","sky","grass"],
+["🌧","It rained, so the road is ___.","wet","dry","new"],
+["🚪","Please ___ the door. It is cold.","close","eat","drink"],
+["🐓","A rooster wakes us up in the ___.","morning","evening","night"],
+["🧴","I wash my hands with ___.","soap","salt","sand"],
+["👀","We see with our ___.","eyes","ears","hands"],
+["🏃","He runs ___ than me.","faster","fast","fastest"],
+["💡","It is dark. Turn on the ___.","light","road","fish"],
+["📞","Can I ___ you a question?","ask","say","tell"],
+["🍋","Mangoes are sweet, but lemons are ___.","sour","sweet","sugar"],
+["🧮","Two plus three is ___.","five","four","six"],
+["🏠","I live ___ a small house.","in","on","of"],
+["🎒","The students ___ their bags to school.","carry","carries","carrying"],
+["🕒","It is 3 o'clock. The class ___ at 4.","starts","start","starting"],
+["🌾","Farmers grow ___ in the field.","crops","cars","phones"],
+["👜","I ___ my bag at home. I forgot it.","left","lift","lent"],
+["💻","She works on a ___ at the office.","computer","cloud","bed"],
+["🎁","Today is my friend's ___. I have a gift.","birthday","winter","Monday"],
+["🛵","He wears a ___ when he rides a bike.","helmet","spoon","ring"]
+];
+const BADGES=[
+["first","🌱","First step","Finish your first Daily 5"],
+["s3","🔥","3-day streak","Play 3 days in a row"],
+["s7","⚡","7-day streak","Play 7 days in a row"],
+["s30","👑","30-day streak","Play 30 days in a row"],
+["perf","🎯","Perfect 5","Get all 5 right"],
+["c100","💯","100 right","Get 100 answers right"],
+["l5","⭐","Level 5","Reach level 5"]
+];
+const KEY="daily5.v1",$=s=>document.querySelector(s);
+const blank=()=>({xp:0,streak:0,best:0,freezes:0,last:"",right:0,days:{},badges:[],cur:null});
+function load(){try{const r=localStorage.getItem(KEY);if(r)return Object.assign(blank(),JSON.parse(r))}catch(e){}return blank()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load(),tab="t",fb=false,res=null;
+const p2=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+const today=()=>ymd(new Date());
+const dayNum=s=>{const[y,m,d]=s.split("-").map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)};
+const lvl=x=>{let n=1;while(x>=50*(n+1)*n)n++;return n};
+const gap=ds=>dayNum(ds)-dayNum(S.last)-1;
+const alive=ds=>!S.last||gap(ds)<=S.freezes;
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function setFor(ds){const n=dayNum(ds),r=rng(n);
+ return[0,1,2,3,4].map(i=>{const q=Q[(n*5+i)%Q.length],o=[q[2],q[3],q[4]];
+  for(let j=2;j>0;j--){const k=Math.floor(r()*(j+1));[o[j],o[k]]=[o[k],o[j]]}
+  return{e:q[0],s:q[1],o,a:o.indexOf(q[2])}})}
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",2200)}
+function go(t){tab=t;render()}
+function start(){S.cur={d:today(),a:[]};fb=false;save();render()}
+function pick(i){if(fb)return;S.cur.a.push(i);fb=true;save();render();const n=$("#next");n&&n.focus()}
+function next(){fb=false;if(S.cur.a.length>=5)finish();else{render();scrollTo(0,0)}}
+function sayQ(k){try{const q=setFor(S.cur.d)[k];speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(q.s.replace("___","blank"));u.lang="en-IN";u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function share(){const d=today(),t="Daily 5 ✅ "+S.days[d]+"/5 · 🔥 "+S.streak+"-day streak";
+ if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);toast("Copied!")}catch(e){toast(t)}}}
+function finish(){
+ const ds=S.cur.d,set=setFor(ds),a=S.cur.a,sc=a.reduce((n,x,i)=>n+(x===set[i].a),0),xp=sc*10+10+(sc===5?20:0),notes=[],ol=lvl(S.xp);
+ if(!S.last||!alive(ds))S.streak=1;
+ else{const g=gap(ds);if(g>0){S.freezes-=g;notes.push("❄️ A streak freeze saved your streak")}S.streak++}
+ if(S.streak%7===0&&S.freezes<2){S.freezes++;notes.push("❄️ You earned a streak freeze")}
+ S.best=Math.max(S.best,S.streak);S.last=ds;S.days[ds]=sc;S.right+=sc;S.xp+=xp;
+ const ks=Object.keys(S.days).sort();while(ks.length>60)delete S.days[ks.shift()];
+ if(lvl(S.xp)>ol)notes.push("⬆️ Level up! You are now level "+lvl(S.xp));
+ const ok={first:1,s3:S.streak>=3,s7:S.streak>=7,s30:S.streak>=30,perf:sc===5,c100:S.right>=100,l5:lvl(S.xp)>=5},nb=[];
+ BADGES.forEach(b=>{if(ok[b[0]]&&!S.badges.includes(b[0])){S.badges.push(b[0]);nb.push(b)}});
+ S.cur=null;fb=false;res={sc,xp,notes,nb};save();render();scrollTo(0,0)}
+function intro(){const n=S.last&&alive(today())?S.streak:0;
+ return`<div class="card c"><div class="emo">📝</div><h2>Today's Daily 5</h2><p>5 easy questions. About 2 minutes.</p><p class="mute">${n?"Play today to make it a "+(n+1)+"-day streak.":"Play today to start a streak."}</p><button class="btn" onclick="start()">Start</button></div><div class="card mute small"><b>How points work</b><br>10 points for each right answer. 10 points for finishing. 20 extra points for all 5 right.</div>`}
+function quiz(){
+ const set=setFor(S.cur.d),a=S.cur.a,k=fb?a.length-1:a.length,q=set[k],p=fb?a[k]:-1;
+ const pr=set.map((x,i)=>`<i class="${i<a.length?(a[i]===x.a?"on":"x"):i===k?"cur":""}"></i>`).join("");
+ const sent=q.s.replace("___",fb?`<b class="fill">${q.o[q.a]}</b>`:'<span class="blank"></span>');
+ const ops=q.o.map((w,i)=>`<button class="opt ${fb?(i===q.a?"ok":i===p?"bad":"dim"):""}" ${fb?"disabled":""} onclick="pick(${i})">${fb&&i===q.a?"✓ ":fb&&i===p?"✗ ":""}${w}</button>`).join("");
+ const f=fb?`<div class="fb" aria-live="polite">${p===q.a?"✓ Correct! +10 points":"✗ Not quite. The answer is “"+q.o[q.a]+"”."}</div><button id="next" class="btn" onclick="next()">${k===4?"See my result":"Next"}</button>`:"";
+ return`<div class="prog" aria-label="Question ${k+1} of 5">${pr}</div><div class="card"><div class="emo">${q.e}</div><div class="sent">${sent}</div>${"speechSynthesis"in window?`<button class="btn alt" onclick="sayQ(${k})">🔊 Listen</button>`:""}${ops}${f}</div>`}
+function done(d){const sc=S.days[d],r=res;
+ return`<div class="card c"><div class="emo">${sc===5?"🎉":sc>=3?"👏":"💪"}</div><h2>${sc} / 5 right</h2>${r?`<p class="pts">+${r.xp} points</p>`+r.notes.map(n=>`<p>${n}</p>`).join("")+r.nb.map(b=>`<p>${b[1]} New badge: <b>${b[2]}</b></p>`).join(""):""}<p class="mute">New questions tomorrow. See you then!</p><button class="btn" onclick="share()">Share my score</button></div>`}
+function rewards(){const l=lvl(S.xp),a=50*l*(l-1),b=50*(l+1)*l,pct=Math.round((S.xp-a)/(b-a)*100);
+ let wk="";for(let i=6;i>=0;i--){const t=new Date();t.setDate(t.getDate()-i);const k=ymd(t),h=S.days[k]!=null;wk+=`<div class="wd"><i class="${h?"d":""}">${h?"✓":""}</i>${"SMTWTFS"[t.getDay()]}</div>`}
+ return`<div class="card"><h2>Level ${l}</h2><div class="bar"><i style="width:${pct}%"></i></div><p class="mute small">${S.xp} points · ${b-S.xp} more for level ${l+1}</p></div><div class="card"><b>Last 7 days</b><div class="week">${wk}</div><p class="mute small">Best streak: ${S.best} days<br>Streak freezes: ${S.freezes} of 2. A freeze saves your streak if you miss a day. You earn one every 7 days.</p></div><div class="card"><b>Badges</b><div class="badges">${BADGES.map(b=>{const h=S.badges.includes(b[0]);return`<div class="bd ${h?"":"lock"}"><div class="e">${h?b[1]:"🔒"}</div><b>${b[2]}</b><br><span class="mute">${b[3]}</span></div>`}).join("")}</div></div>`}
+function render(){
+ const d=today();
+ if(tab==="t"&&S.cur&&S.cur.d===d&&S.cur.a.length>=5&&!fb){finish();return}
+ $("#cs").textContent="🔥 "+(S.last&&alive(d)?S.streak:0);$("#cl").textContent="Lv "+lvl(S.xp);
+ document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.t===tab?"page":"false"));
+ $("#app").innerHTML=tab==="r"?rewards():S.days[d]!=null?done(d):S.cur&&S.cur.d===d?quiz():intro()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+render();
+</script>
+</body>
+</html>
